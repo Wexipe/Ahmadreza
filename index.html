@@ -1,10 +1,85 @@
 <!DOCTYPE html>
-<html lang="fa">
-  <head>
-    <meta charset="UTF-8" />
-    <title>نمونه HTML</title>
-  </head>
-  <body>
-    <p>احمدرضا محسن بیک</p>
-  </body>
+<html lang="fa" dir="rtl">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>تبدیل URL به QR Code</title>
+  <style>
+    body{font-family: Tahoma, Arial, sans-serif;display:flex;align-items:center;justify-content:center;min-height:100vh;background:#f7f7f8;margin:0}
+    .card{background:#fff;border-radius:12px;box-shadow:0 6px 18px rgba(0,0,0,0.08);padding:22px;max-width:520px;width:95%}
+    h1{font-size:18px;margin:0 0 10px}
+    label{display:block;margin-top:12px;font-size:13px}
+    input[type=text]{width:100%;padding:10px;border-radius:8px;border:1px solid #dcdce0;font-size:14px}
+    input[type=range]{width:100%}
+    .controls{display:flex;gap:8px;margin-top:14px}
+    button{flex:1;padding:10px;border-radius:8px;border:0;background:#1f6feb;color:#fff;font-size:14px;cursor:pointer}
+    #download{display:none;text-decoration:none;padding:10px;border-radius:8px;background:#22c55e;color:#fff}
+    .preview{display:flex;align-items:center;justify-content:center;margin-top:16px}
+    .note{font-size:12px;color:#666;margin-top:10px}
+  </style>
+</head>
+<body>
+  <div class="card">
+    <h1>تبدیل URL به QR Code و دانلود آن</h1>
+
+    <label for="url">آدرس (URL)</label>
+    <input id="url" type="text" placeholder="مثال: https://example.com" value="https://example.com">
+
+    <label for="size">اندازه (px): <span id="sizeVal">300</span></label>
+    <input id="size" type="range" min="100" max="800" value="300">
+
+    <div class="controls">
+      <button id="gen">تولید QR Code</button>
+      <a id="download">دانلود تصویر</a>
+    </div>
+
+    <div class="preview">
+      <!-- QRious هنگام تولید یک عنصر <canvas> داخل این عنصر قرار می‌دهد -->
+      <canvas id="qr" aria-hidden="true"></canvas>
+    </div>
+
+    <div class="note">نکته: این نسخه از طریق کتابخانهٔ <code>QRious</code> (CDN) روی مرورگر شما QR را تولید می‌کند و نیازی به سرور خارجی ندارد. در صورت تمایل می‌توانم نسخهٔ بدون CDN (تماماً آفلاین) هم در یک فایل واحد قرار دهم.</div>
+  </div>
+
+  <!-- کتابخانهٔ QRious از CDN برای تولید QR روی canvas استفاده می‌کند -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrious/4.0.2/qrious.min.js"></script>
+  <script>
+    const urlInput = document.getElementById('url');
+    const sizeInput = document.getElementById('size');
+    const sizeVal = document.getElementById('sizeVal');
+    const genBtn = document.getElementById('gen');
+    const downloadLink = document.getElementById('download');
+    const canvasEl = document.getElementById('qr');
+
+    sizeInput.addEventListener('input', ()=> sizeVal.textContent = sizeInput.value);
+
+    function generateQR(){
+      const value = urlInput.value.trim();
+      const size = parseInt(sizeInput.value, 10) || 300;
+      if(!value){
+        alert('لطفاً یک آدرس وارد کنید.');
+        return;
+      }
+
+      // QRious یک canvas از قبل موجود را پر می‌کند
+      const qr = new QRious({
+        element: canvasEl,
+        value: value,
+        size: size,
+        level: 'H' // سطح تصحیح خطا
+      });
+
+      // ساخت دادهٔ تصویر برای دانلود
+      const dataUrl = canvasEl.toDataURL('image/png');
+      downloadLink.href = dataUrl;
+      downloadLink.download = `qr-${Date.now()}.png`;
+      downloadLink.style.display = 'inline-block';
+    }
+
+    genBtn.addEventListener('click', generateQR);
+
+    // تولید اولیه با مقدار پیش‌فرض
+    window.addEventListener('DOMContentLoaded', generateQR);
+  </script>
+</body>
 </html>
